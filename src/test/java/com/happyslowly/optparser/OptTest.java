@@ -39,34 +39,30 @@ public class OptTest {
 
     @Test
     public void testGroups() {
-        Parser parser = new OptParser("loco");
-        SingleParser modelResult = parser.addGroup("rucsModelResult",
-                "pull from RUCS model result");
-        SingleParser contextLogging = parser.addGroup("rucsContextLog",
-                "pull from RUCS context logging");
+        Parser parser = new OptParser("mycmd");
+        SingleParser group1 = parser.addGroup("group1",
+                "group1 sub commands");
+        SingleParser group2 = parser.addGroup("group2",
+                "group2 sub commands");
 
-        modelResult.add(Opt.builder().name("--start-dt").help("start date").build())
+        group1.add(Opt.builder().name("--start-dt").help("start date").build())
                 .add(Opt.builder().name("--end-dt").help("end date").build())
-                .add(Opt.builder().name("--caller-id").help("caller id").build());
+                .add(Opt.builder().name("--other").help("other option").build());
 
-        contextLogging.add(Opt.builder().name("--start-dt").help("start date").build())
+        group2.add(Opt.builder().name("--start-dt").help("start date").build())
                 .add(Opt.builder().name("--end-dt").help("end date").build())
-                .add(Opt.builder().name("--corr-id").help("corr id").build());
+                .add(Opt.builder().name("--other2").help("other option 2").build());
 
-        parser.parse("rucsModelResult --start-dt 1970/01/01 --end-dt 1970/01/01 --caller-id abc".split(" "));
+        parser.parse("group1 --start-dt 1970/01/01 --end-dt 1970/01/01 --other abc".split(" "));
 
         Assert.assertEquals(
                 new HashMap<String, Object>() {{
                     put("startDt", "1970/01/01");
                     put("endDt", "1970/01/01");
-                    put("callerId", "abc");
+                    put("other", "abc");
                 }}, parser.getOptions());
 
-        Assert.assertEquals("rucsModelResult", parser.getGroup());
-
-//        parser.parse("-h".split(" "));
-
-//        parser.parse("rucsModelResult -h".split(" "));
+        Assert.assertEquals("group1", parser.getGroup());
     }
 
 }
