@@ -19,8 +19,8 @@ public class OptTest {
         Parser parser = new OptParser("foo");
         parser.add(Opt.builder().name("-i").help("input file").build())
                 .add(Opt.builder().name("-o").help("output file").build())
-                .add(Opt.builder().name("-l").type(OptType.INTEGER).metaVar("lines").help("lines to write").build())
-                .add(Opt.builder().name("-v").asAction().help("verbose").build());
+                .add(Opt.builder().name("-l").withType(OptType.INTEGER).metaVar("lines").help("lines to write").build())
+                .add(Opt.builder().name("-v").withType(OptType.BOOLEAN).help("verbose").build());
 
         parser.parse("-v -i foo.txt -o bar.txt -l 42 third.txt".split(" "));
         Assert.assertEquals(

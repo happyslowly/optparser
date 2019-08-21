@@ -14,6 +14,7 @@ public class OptParser implements Parser {
 
     public OptParser(String name) {
         this.name = name;
+        this.defaultParser = new ParserImpl(name);
     }
 
     @Override
@@ -40,21 +41,24 @@ public class OptParser implements Parser {
 
     @Override
     public SingleParser add(Opt opt) {
-        if (defaultParser == null) {
-            defaultParser = new ParserImpl(name);
-        }
         return defaultParser.add(opt);
     }
 
     @Override
     public void parse(String[] input) {
-        String first = input[0];
-        if (groups != null && groups.containsKey(first)) {
-            group = first;
-            groups.get(first).parse(input);
-        } else if (first.equalsIgnoreCase("-h") ||
-                first.equalsIgnoreCase("--help")) {
-            printHelp();
+        if (input.length >= 1) {
+            String first = input[0];
+            if (groups != null && groups.containsKey(first)) {
+                group = first;
+                groups.get(first).parse(input);
+            } else if (first.equalsIgnoreCase("-h") ||
+                    first.equalsIgnoreCase("--help")) {
+                printHelp();
+            } else if (groups != null) {
+                throw new IllegalArgumentException("Unknown group: " + first);
+            } else {
+                defaultParser.parse(input);
+            }
         } else {
             defaultParser.parse(input);
         }
@@ -85,7 +89,7 @@ public class OptParser implements Parser {
     public void printHelp() {
         StringBuilder sb = new StringBuilder();
         if (groups != null) {
-            sb.append(String.format("Usage: %s COMMAND%n", name));
+            sb.append(String.format("Usage: %s [COMMAND]%n", name));
             sb.append("Commands:\n");
             int maxLen = groups.keySet().stream().map(String::length).max(Integer::compareTo).orElse(0);
             String fmt = Helper.getOptionFormat(maxLen);
@@ -101,5 +105,10 @@ public class OptParser implements Parser {
     @Override
     public String getGroup() {
         return group;
+    }
+
+    @Override
+    public SingleParser getGroupParser() {
+        return group == null ? null : groups.get(group);
     }
 }

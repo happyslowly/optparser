@@ -1,6 +1,7 @@
 package com.happyslowly.optparser;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ParserImpl implements SingleParser {
 
@@ -12,8 +13,8 @@ public class ParserImpl implements SingleParser {
 
     public ParserImpl(String name) {
         this.name = name;
-        this.opts = new HashMap<>();
-        this.options = new TreeMap<>();
+        this.opts = new LinkedHashMap<>();
+        this.options = new HashMap<>();
         this.arguments = new ArrayList<>();
     }
 
@@ -43,10 +44,10 @@ public class ParserImpl implements SingleParser {
 
                 Opt opt = opts.get(token);
                 if (opt == null) {
-                    throw new IllegalArgumentException("Unknown option: " + token);
+                    throw new IllegalArgumentException("Unknown option: " + token + " - ");
                 }
 
-                if (opt.isAction()) {
+                if (opt.getType() == OptType.BOOLEAN) {
                     options.put(opt.getMetaVar(), true);
                 } else {
                     if (i < args.length - 1) {
@@ -61,6 +62,17 @@ public class ParserImpl implements SingleParser {
                 }
             } else {
                 arguments.add(token);
+            }
+        }
+        // Setup All the defaults
+        opts.entrySet().stream().filter(e -> e.getValue().getDefaultValue() != null).forEach(e -> {
+            if (!options.containsKey(e.getKey())) options.put(e.getValue().getMetaVar(), e.getValue().getDefaultValue());
+        });
+
+        // check all the required options are there
+        for (Opt opt : opts.values()) {
+            if (opt.isRequired() && !options.containsKey(opt.getMetaVar())) {
+                throw new IllegalArgumentException("option " + opt.getName() + " must be provided");
             }
         }
     }
@@ -96,11 +108,6 @@ public class ParserImpl implements SingleParser {
     @Override
     public String getName() {
         return name;
-    }
-
-    private void processToken(String token, StringTokenizer tokenizer)
-            throws IllegalArgumentException {
-
     }
 
     private Object processValue(String token, OptType type) {

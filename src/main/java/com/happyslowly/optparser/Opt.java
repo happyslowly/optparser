@@ -13,7 +13,8 @@ public class Opt {
     private String help;
     private OptType type;
     private String metaVar;
-    private boolean action;
+    private boolean required;
+    private Object defaultValue;
 
     public static OptBuilder builder() {
         return new OptBuilder();
@@ -24,7 +25,8 @@ public class Opt {
         private String help;
         private OptType type;
         private String metaVar;
-        private boolean action;
+        private boolean required;
+        private Object defaultValue;
 
         public OptBuilder name(String name) {
             this.name = name;
@@ -36,7 +38,7 @@ public class Opt {
             return this;
         }
 
-        public OptBuilder type(OptType type) {
+        public OptBuilder withType(OptType type) {
             this.type = type;
             return this;
         }
@@ -46,8 +48,13 @@ public class Opt {
             return this;
         }
 
-        public OptBuilder asAction() {
-            this.action = true;
+        public OptBuilder asRequired() {
+            this.required = true;
+            return this;
+        }
+
+        public OptBuilder withDefault(Object val) {
+            this.defaultValue = val;
             return this;
         }
 
@@ -58,7 +65,7 @@ public class Opt {
             if (type == null) {
                 type = OptType.STRING;
             }
-            return new Opt(name, help, type, metaVar, action);
+            return new Opt(name, help, type, metaVar, required, defaultValue);
         }
 
         private static String getMetaVarFromName(String name) {
